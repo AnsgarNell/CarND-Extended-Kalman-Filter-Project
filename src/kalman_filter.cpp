@@ -51,7 +51,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     * update the state by using Extended Kalman Filter equations
   */
 	float range = sqrt((x_(0) * x_(0)) + (x_(1) * x_(1)));
-	float phi = atan(x_(1)/x_(0));
+	
+	float phi = atan2(x_(1), x_(0));
 	float range_rate;
 
 	if(range < 0.0001) range_rate = 0;
@@ -61,6 +62,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 	extended_z << range, phi, range_rate;
 
 	VectorXd y = z - extended_z;
+	// Added normalization as explained in https://discussions.udacity.com/t/ekf-gets-off-track/276122/26
+	y[1] = atan2(sin(y[1]), cos(y[1]));
 	MatrixXd Ht = H_.transpose();
 	MatrixXd S = H_ * P_ * Ht + R_;
 	MatrixXd Si = S.inverse();
